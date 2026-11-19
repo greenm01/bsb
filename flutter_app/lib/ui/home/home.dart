@@ -485,7 +485,11 @@ class _HomePageState extends State<HomePage> {
                       )
                     : AppBar(
                         titleSpacing: 0,
-                        title: const Text('Berean Standard Bible'),
+                        title: Text(
+                          getIt.isRegistered<AppState>()
+                              ? getIt<AppState>().translation.name
+                              : 'Berean Standard Bible',
+                        ),
                         leading: isAdding
                             ? IconButton(
                                 icon: const Icon(Icons.arrow_back),
