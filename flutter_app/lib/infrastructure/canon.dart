@@ -39,6 +39,7 @@ class Book {
 /// The books of the open translation, in reading order.
 class Canon {
   Canon({
+    required this.translationId,
     required List<Book> books,
     required List<List<List<int>>> gridSections,
     Map<String, int>? namesToIds,
@@ -58,6 +59,7 @@ class Canon {
   /// The BSB's 66 books, laid out as the book chooser has always shown them.
   factory Canon.bsb() {
     return Canon(
+      translationId: 'bsb',
       books: [
         for (final id in bookIdToFullNameMap.keys)
           Book(
@@ -77,6 +79,10 @@ class Canon {
 
   /// The canon every screen reads: the BSB's until another translation opens.
   static Canon current = Canon.bsb();
+
+  /// The translation these books belong to, as its highlights and notes
+  /// record it.
+  final String translationId;
 
   final List<Book> books;
 

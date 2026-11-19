@@ -9,7 +9,7 @@ import 'reading_plan_models.dart';
 
 class AnnotationDatabaseHelper {
   static const _databaseName = "user_annotations.db";
-  static const _databaseVersion = 5;
+  static const _databaseVersion = 6;
 
   Database? _db;
 
@@ -42,7 +42,8 @@ class AnnotationDatabaseHelper {
         color INTEGER NOT NULL,
         text TEXT,
         created_at INTEGER NOT NULL,
-        updated_at INTEGER NOT NULL
+        updated_at INTEGER NOT NULL,
+        translation_id TEXT NOT NULL DEFAULT 'bsb'
       )
     ''');
 
@@ -61,7 +62,8 @@ class AnnotationDatabaseHelper {
         content TEXT NOT NULL,
         passage_text TEXT,
         created_at INTEGER NOT NULL,
-        updated_at INTEGER NOT NULL
+        updated_at INTEGER NOT NULL,
+        translation_id TEXT NOT NULL DEFAULT 'bsb'
       )
     ''');
 
@@ -99,6 +101,14 @@ class AnnotationDatabaseHelper {
     }
     if (oldVersion < 5) {
       await _createReadingPlanTables(db);
+    }
+    if (oldVersion < 6) {
+      // Everything made so far was made in the BSB.
+      for (final table in ['highlights', 'notes']) {
+        await db.execute(
+          "ALTER TABLE $table ADD COLUMN translation_id TEXT NOT NULL DEFAULT 'bsb'",
+        );
+      }
     }
   }
 

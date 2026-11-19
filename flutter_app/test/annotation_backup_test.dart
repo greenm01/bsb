@@ -52,7 +52,7 @@ void main() {
       );
 
       final jsonString = backup.toJson();
-      expect(jsonString, contains('"version": 3'));
+      expect(jsonString, contains('"version": 4'));
       expect(jsonString, contains('"app": "bsb"'));
       expect(
         jsonString,
@@ -65,7 +65,7 @@ void main() {
       expect(jsonString, contains('"plan_id": "through_bible_sequential"'));
 
       final restored = AnnotationBackup.fromJson(jsonString);
-      expect(restored.version, equals(3));
+      expect(restored.version, equals(4));
       expect(restored.app, equals('bsb'));
       expect(restored.highlights.length, equals(1));
       expect(restored.highlights.first.id, equals('h1'));

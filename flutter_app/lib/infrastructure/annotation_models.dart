@@ -58,6 +58,9 @@ class Highlight {
   final DateTime createdAt;
   final DateTime updatedAt;
 
+  /// The translation it was made in; the BSB's for anything older.
+  final String translationId;
+
   Highlight({
     required this.id,
     required this.bookId,
@@ -68,6 +71,7 @@ class Highlight {
     this.text,
     required this.createdAt,
     required this.updatedAt,
+    this.translationId = 'bsb',
   }) : assert(startWordId <= endWordId);
 
   Highlight copyWith({
@@ -80,6 +84,7 @@ class Highlight {
     String? text,
     DateTime? createdAt,
     DateTime? updatedAt,
+    String? translationId,
   }) {
     return Highlight(
       id: id ?? this.id,
@@ -91,6 +96,7 @@ class Highlight {
       text: text ?? this.text,
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
+      translationId: translationId ?? this.translationId,
     );
   }
 
@@ -105,6 +111,7 @@ class Highlight {
       'text': text,
       'created_at': createdAt.millisecondsSinceEpoch,
       'updated_at': updatedAt.millisecondsSinceEpoch,
+      'translation_id': translationId,
     };
   }
 
@@ -124,6 +131,7 @@ class Highlight {
       text: map['text'] as String?,
       createdAt: _parseDateTime(map['created_at']),
       updatedAt: _parseDateTime(map['updated_at']),
+      translationId: map['translation_id'] as String? ?? 'bsb',
     );
   }
 
@@ -147,6 +155,9 @@ class Note {
   final DateTime createdAt;
   final DateTime updatedAt;
 
+  /// The translation it was made in; the BSB's for anything older.
+  final String translationId;
+
   Note({
     required this.id,
     required this.bookId,
@@ -157,6 +168,7 @@ class Note {
     this.passageText,
     required this.createdAt,
     required this.updatedAt,
+    this.translationId = 'bsb',
   }) : assert(startWordId <= endWordId);
 
   Note copyWith({
@@ -169,6 +181,7 @@ class Note {
     String? passageText,
     DateTime? createdAt,
     DateTime? updatedAt,
+    String? translationId,
   }) {
     return Note(
       id: id ?? this.id,
@@ -180,6 +193,7 @@ class Note {
       passageText: passageText ?? this.passageText,
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
+      translationId: translationId ?? this.translationId,
     );
   }
 
@@ -194,6 +208,7 @@ class Note {
       'passage_text': passageText,
       'created_at': createdAt.millisecondsSinceEpoch,
       'updated_at': updatedAt.millisecondsSinceEpoch,
+      'translation_id': translationId,
     };
   }
 
@@ -208,6 +223,7 @@ class Note {
       passageText: map['passage_text'] as String?,
       createdAt: _parseDateTime(map['created_at']),
       updatedAt: _parseDateTime(map['updated_at']),
+      translationId: map['translation_id'] as String? ?? 'bsb',
     );
   }
 

@@ -24,7 +24,7 @@ class AnnotationImportResult {
 }
 
 class AnnotationBackup {
-  static const int currentVersion = 3;
+  static const int currentVersion = 4;
 
   final int version;
   final String app;

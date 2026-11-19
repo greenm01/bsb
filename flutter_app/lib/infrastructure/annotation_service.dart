@@ -6,6 +6,7 @@ import 'package:uuid/uuid.dart';
 import 'annotation_backup.dart';
 import 'annotation_database.dart';
 import 'annotation_models.dart';
+import 'canon.dart';
 import 'reading_plan_service.dart';
 import 'service_locator.dart';
 
@@ -21,22 +22,34 @@ class AnnotationService {
     changeNotifier.value++;
   }
 
-  Future<List<Highlight>> getHighlights(int bookId, int chapter) {
-    return _dbHelper.getHighlightsForChapter(bookId, chapter);
+  /// Highlights and notes belong to the translation they were made in, and
+  /// show only in it. Backups keep them all.
+  String get _translationId => Canon.current.translationId;
+
+  List<Highlight> _openHighlights(List<Highlight> all) =>
+      all.where((h) => h.translationId == _translationId).toList();
+
+  List<Note> _openNotes(List<Note> all) =>
+      all.where((n) => n.translationId == _translationId).toList();
+
+  Future<List<Highlight>> getHighlights(int bookId, int chapter) async {
+    return _openHighlights(
+      await _dbHelper.getHighlightsForChapter(bookId, chapter),
+    );
   }
 
   Future<List<Highlight>> getAllHighlights({
     String orderBy = 'updated_at DESC',
-  }) {
-    return _dbHelper.getAllHighlights(orderBy: orderBy);
+  }) async {
+    return _openHighlights(await _dbHelper.getAllHighlights(orderBy: orderBy));
   }
 
-  Future<List<Note>> getNotes(int bookId, int chapter) {
-    return _dbHelper.getNotesForChapter(bookId, chapter);
+  Future<List<Note>> getNotes(int bookId, int chapter) async {
+    return _openNotes(await _dbHelper.getNotesForChapter(bookId, chapter));
   }
 
-  Future<List<Note>> getAllNotes({String orderBy = 'updated_at DESC'}) {
-    return _dbHelper.getAllNotes(orderBy: orderBy);
+  Future<List<Note>> getAllNotes({String orderBy = 'updated_at DESC'}) async {
+    return _openNotes(await _dbHelper.getAllNotes(orderBy: orderBy));
   }
 
   Future<Note?> getNoteById(String id) {
@@ -72,7 +85,7 @@ class AnnotationService {
     int currentStart = startWordId;
     int currentEnd = endWordId;
 
-    final existing = await _dbHelper.getHighlightsForChapter(bookId, chapter);
+    final existing = await getHighlights(bookId, chapter);
     final overlapping = existing
         .where(
           (h) => h.startWordId <= currentEnd && h.endWordId >= currentStart,
@@ -105,6 +118,7 @@ class AnnotationService {
               color: h.color,
               createdAt: now,
               updatedAt: now,
+              translationId: _translationId,
             ),
           );
         } else if (h.startWordId < currentStart && h.endWordId <= currentEnd) {
@@ -135,6 +149,7 @@ class AnnotationService {
             : null,
         createdAt: now,
         updatedAt: now,
+        translationId: _translationId,
       ),
     );
 
@@ -149,7 +164,7 @@ class AnnotationService {
     required int endWordId,
   }) async {
     final now = DateTime.now();
-    final existing = await _dbHelper.getHighlightsForChapter(bookId, chapter);
+    final existing = await getHighlights(bookId, chapter);
     final overlapping = existing
         .where((h) => h.startWordId <= endWordId && h.endWordId >= startWordId)
         .toList();
@@ -173,6 +188,7 @@ class AnnotationService {
             color: h.color,
             createdAt: now,
             updatedAt: now,
+            translationId: _translationId,
           ),
         );
       } else if (h.startWordId < startWordId && h.endWordId <= endWordId) {
@@ -237,6 +253,7 @@ class AnnotationService {
         passageText: passageText,
         createdAt: now,
         updatedAt: now,
+        translationId: _translationId,
       ),
     );
     _notifyChange();
