@@ -4,6 +4,7 @@ import 'package:bsb/app_state.dart';
 import 'package:bsb/core/font_family.dart';
 import 'package:bsb/core/font_scale.dart';
 import 'package:bsb/infrastructure/audio/audio_playback_manager.dart';
+import 'package:bsb/infrastructure/canon.dart';
 import 'package:bsb/infrastructure/reference.dart';
 import 'package:bsb/ui/hebrew_greek/hebrew_greek_screen.dart';
 import 'package:bsb/ui/home/chapter_chooser.dart';
@@ -534,16 +535,21 @@ class _TextScreenState extends State<TextScreen>
                       icon: Icon(Icons.content_copy),
                       label: 'Copy',
                     ),
-                    BottomNavigationBarItem(
-                      icon: _getLanguageIcon(language),
-                      label: _getLanguageLabel(language),
-                    ),
+                    if (Canon.current.isBsb)
+                      BottomNavigationBarItem(
+                        icon: _getLanguageIcon(language),
+                        label: _getLanguageLabel(language),
+                      ),
                     BottomNavigationBarItem(
                       icon: Icon(Icons.more_horiz, key: _moreKey),
                       label: 'More',
                     ),
                   ],
-                  onTap: (index) => _handleBottomBarTap(index, language),
+                  // Without Hebrew and Greek, More moves into their place.
+                  onTap: (index) => _handleBottomBarTap(
+                    !Canon.current.isBsb && index >= 3 ? index + 1 : index,
+                    language,
+                  ),
                 ),
               ),
             ),
@@ -747,21 +753,23 @@ class _TextScreenState extends State<TextScreen>
     final selected = await showMenu<String>(
       context: context,
       position: position,
-      items: const [
-        PopupMenuItem<String>(value: 'play', child: Text('Play')),
-        PopupMenuItem<String>(
-          value: 'compare',
-          child: Text('Compare Translations'),
-        ),
-        PopupMenuItem<String>(
-          value: 'cross_reference',
-          child: Text('Cross Reference'),
-        ),
-        PopupMenuItem<String>(
+      items: [
+        if (Canon.current.isBsb) ...const [
+          PopupMenuItem<String>(value: 'play', child: Text('Play')),
+          PopupMenuItem<String>(
+            value: 'compare',
+            child: Text('Compare Translations'),
+          ),
+          PopupMenuItem<String>(
+            value: 'cross_reference',
+            child: Text('Cross Reference'),
+          ),
+        ],
+        const PopupMenuItem<String>(
           value: 'add_to_playlist',
           child: Text('Add to Playlist'),
         ),
-        PopupMenuItem<String>(value: 'memorize', child: Text('Memorize')),
+        const PopupMenuItem<String>(value: 'memorize', child: Text('Memorize')),
       ],
     );
 

@@ -462,18 +462,19 @@ class _HomePageState extends State<HomePage> {
                                                 ],
                                               ),
                                             ),
-                                            const PopupMenuItem(
-                                              value: 'play',
-                                              child: Row(
-                                                children: [
-                                                  Icon(Icons.play_arrow),
-                                                  SizedBox(width: 12),
-                                                  Expanded(
-                                                    child: Text('Play Audio'),
-                                                  ),
-                                                ],
+                                            if (Canon.current.isBsb)
+                                              const PopupMenuItem(
+                                                value: 'play',
+                                                child: Row(
+                                                  children: [
+                                                    Icon(Icons.play_arrow),
+                                                    SizedBox(width: 12),
+                                                    Expanded(
+                                                      child: Text('Play Audio'),
+                                                    ),
+                                                  ],
+                                                ),
                                               ),
-                                            ),
                                           ],
                                   ),
                                 ],

@@ -37,6 +37,7 @@ dependencies:
   wakelock_plus: ^1.8.0
 
   material_ui: any
+  archive: ^4.7.1
 dev_dependencies:
   flutter_test: 
     sdk: flutter

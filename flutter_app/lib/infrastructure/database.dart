@@ -4,9 +4,11 @@ import 'dart:io';
 
 import 'package:bsb/infrastructure/audio/verse_timings.dart';
 import 'package:bsb/infrastructure/bsb_text_localizer.dart';
+import 'package:bsb/infrastructure/canon.dart';
 import 'package:bsb/infrastructure/reference.dart';
 import 'package:bsb/infrastructure/search/search_models.dart';
 import 'package:bsb/infrastructure/section_heading.dart';
+import 'package:bsb/infrastructure/translations.dart';
 import 'package:bsb/infrastructure/verse_element.dart';
 import 'package:bsb/infrastructure/word_cluster.dart';
 import 'package:flutter/foundation.dart';
@@ -21,14 +23,37 @@ class DatabaseHelper {
   static const _databaseName = "database.db";
   static const _databaseVersion = 32;
   late Database _database;
-  bool _useBritishSpelling = false;
+  bool _britishSpelling = false;
+
+  /// The bundled BSB while another translation is open.
+  Database? _bsb;
+
+  // British spelling rewrites the BSB's own words, so it applies only there.
+  bool get _useBritishSpelling => _britishSpelling && _bsb == null;
 
   bool get useBritishSpelling => _useBritishSpelling;
 
   void setUseBritishSpelling(bool enabled) {
-    if (_useBritishSpelling == enabled) return;
-    _useBritishSpelling = enabled;
+    if (_britishSpelling == enabled) return;
+    _britishSpelling = enabled;
     _chapterWordsCache.clear();
+  }
+
+  /// Opens a translation's text, the bundled BSB's or an imported one's,
+  /// and returns its canon.
+  Future<Canon> openTranslation(Translation translation) async {
+    if (_bsb != null) {
+      await _database.close();
+      _database = _bsb!;
+      _bsb = null;
+    }
+    _chapterWordsCache.clear();
+    if (translation.path == null) return Canon.bsb();
+    final db = await openDatabase(translation.path!);
+    _bsb = _database;
+    _database = db;
+    await ensureSearchTableExists();
+    return Canon.fromRows(translation.id, await db.query(booksTable));
   }
 
   @visibleForTesting

@@ -2,6 +2,7 @@ import 'package:bsb/app_state.dart';
 import 'package:bsb/core/font_scale.dart';
 import 'package:bsb/infrastructure/service_locator.dart';
 import 'package:bsb/ui/annotations/annotation_file_handler.dart';
+import 'package:bsb/ui/settings/translation_page.dart';
 import 'package:bsb/ui/settings/theme/theme_selection_page.dart';
 import 'package:bsb/ui/settings/user_settings.dart';
 import 'package:material_ui/material_ui.dart';
@@ -396,20 +397,34 @@ class _SettingsPageState extends State<SettingsPage> {
                     ),
                   ),
                 ),
-                SwitchListTile(
-                  title: const Text('British English Spelling'),
-                  value: appState.useBritishSpelling,
-                  onChanged: appState.setUseBritishSpelling,
-                ),
-                Padding(
-                  padding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
-                  child: Text(
-                    'The Berean Standard Bible text uses American spelling. This setting replaces the American spellings with their British equivalents within the app.',
-                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                      color: Theme.of(context).colorScheme.onSurfaceVariant,
+                ListTile(
+                  leading: const Icon(Icons.menu_book_outlined),
+                  title: const Text('Translation'),
+                  subtitle: Text(appState.translation.name),
+                  trailing: const Icon(Icons.chevron_right),
+                  onTap: () => Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => const TranslationPage(),
                     ),
                   ),
                 ),
+                if (appState.translation.isBsb) ...[
+                  SwitchListTile(
+                    title: const Text('British English Spelling'),
+                    value: appState.useBritishSpelling,
+                    onChanged: appState.setUseBritishSpelling,
+                  ),
+                  Padding(
+                    padding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
+                    child: Text(
+                      'The Berean Standard Bible text uses American spelling. This setting replaces the American spellings with their British equivalents within the app.',
+                      style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                        color: Theme.of(context).colorScheme.onSurfaceVariant,
+                      ),
+                    ),
+                  ),
+                ],
                 const Divider(),
                 Padding(
                   padding: const EdgeInsets.fromLTRB(16, 16, 16, 4),

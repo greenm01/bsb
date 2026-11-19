@@ -1,8 +1,14 @@
+import 'dart:developer';
+
 import 'package:bsb/core/font_scale.dart';
 import 'package:bsb/core/theme.dart';
+import 'package:bsb/infrastructure/audio/audio_playback_manager.dart';
+import 'package:bsb/infrastructure/canon.dart';
 import 'package:bsb/infrastructure/database.dart';
 import 'package:bsb/infrastructure/service_locator.dart';
+import 'package:bsb/infrastructure/translations.dart';
 import 'package:bsb/ui/settings/user_settings.dart';
+import 'package:bsb/ui/tabs/tab_manager.dart';
 import 'package:material_ui/material_ui.dart';
 
 class AppState extends ChangeNotifier {
@@ -22,6 +28,26 @@ class AppState extends ChangeNotifier {
     wordsOfJesusInRedNotifier.addListener(notifyListeners);
     useBritishSpellingNotifier.addListener(notifyListeners);
     keepScreenAwakeNotifier.addListener(notifyListeners);
+    translationNotifier.addListener(notifyListeners);
+  }
+
+  /// The translation open now; the BSB's unless the reader chose another.
+  final translationNotifier = ValueNotifier<Translation>(Translation.bsb);
+  Translation get translation => translationNotifier.value;
+
+  Future<void> openTranslation(Translation translation) async {
+    final db = _effectiveDbHelper;
+    if (db == null) return;
+    // The audio is the BSB's, and stops when another translation opens.
+    if (!translation.isBsb && getIt.isRegistered<AudioPlaybackManager>()) {
+      await getIt<AudioPlaybackManager>().pause();
+    }
+    Canon.current = await db.openTranslation(translation);
+    if (getIt.isRegistered<TabManager>()) {
+      getIt<TabManager>().fitTabsTo(Canon.current);
+    }
+    translationNotifier.value = translation;
+    await userSettings.setTranslationId(translation.id);
   }
 
   DatabaseHelper? get _effectiveDbHelper =>
@@ -121,6 +147,17 @@ class AppState extends ChangeNotifier {
     _effectiveDbHelper?.setUseBritishSpelling(british);
     useBritishSpellingNotifier.value = british;
     keepScreenAwakeNotifier.value = userSettings.keepScreenAwake;
+    final translationId = userSettings.translationId;
+    if (translationId != Translation.bsb.id) {
+      try {
+        final saved = await TranslationStore().byId(translationId);
+        if (saved != null) await openTranslation(saved);
+      } catch (e) {
+        // A translation that won't open leaves the BSB open.
+        log('Could not open translation $translationId: $e');
+        await openTranslation(Translation.bsb);
+      }
+    }
   }
 
   Future<void> setThemeMode(ThemeMode mode) async {
@@ -217,6 +254,7 @@ class AppState extends ChangeNotifier {
     verseChooserStyleNotifier.removeListener(notifyListeners);
     wordsOfJesusInRedNotifier.removeListener(notifyListeners);
     useBritishSpellingNotifier.removeListener(notifyListeners);
+    translationNotifier.removeListener(notifyListeners);
     keepScreenAwakeNotifier.removeListener(notifyListeners);
     themeNotifier.dispose();
     appThemeIdNotifier.dispose();

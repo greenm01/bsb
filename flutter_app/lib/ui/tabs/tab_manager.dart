@@ -1,5 +1,6 @@
 import 'dart:convert';
 
+import 'package:bsb/infrastructure/canon.dart';
 import 'package:bsb/infrastructure/service_locator.dart';
 import 'package:bsb/ui/settings/user_settings.dart';
 import 'package:flutter/foundation.dart';
@@ -304,6 +305,25 @@ class TabManager extends ChangeNotifier {
     final tab = tabById(tabId);
     if (tab == null) return;
     _applyChapterToTab(tab, bookId, chapter, sectionHeading, targetVerse);
+  }
+
+  /// Moves each tab whose chapter a newly opened translation lacks to that
+  /// translation's first book.
+  void fitTabsTo(Canon canon) {
+    var changed = false;
+    for (final tab in _tabs) {
+      if (tab.isPlaylist || tab.bookId == null) continue;
+      final book = canon[tab.bookId];
+      if (book != null && (tab.chapter ?? 1) <= book.chapterCount) continue;
+      tab.bookId = canon.books.first.id;
+      tab.chapter = 1;
+      tab.sectionHeading = null;
+      tab.targetVerse = null;
+      changed = true;
+    }
+    if (!changed) return;
+    _saveToPrefs();
+    notifyListeners();
   }
 
   void _applyChapterToTab(

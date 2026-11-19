@@ -279,6 +279,15 @@ class UserSettings {
     }
   }
 
+  static const _translationIdKey = 'translationId';
+
+  /// The translation open when the app last closed.
+  String get translationId => _prefs.getString(_translationIdKey) ?? 'bsb';
+
+  Future<void> setTranslationId(String id) async {
+    await _prefs.setString(_translationIdKey, id);
+  }
+
   static const _useBritishSpellingKey = 'useBritishSpelling';
 
   bool get useBritishSpelling =>

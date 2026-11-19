@@ -45,7 +45,8 @@ class _MyAppState extends State<MyApp> {
           theme: manager.lightThemeData,
           darkTheme: manager.darkThemeData,
           themeMode: manager.themeMode,
-          home: const HomePage(),
+          // A new translation rebuilds every screen from its canon.
+          home: HomePage(key: ValueKey(manager.translation.id)),
         );
       },
     );

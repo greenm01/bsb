@@ -77,12 +77,65 @@ class Canon {
     );
   }
 
+  /// An imported translation's books, from the rows of its `books` table:
+  /// the Old Testament's, then the New's, each in the translation's order,
+  /// laid out in the book chooser six to a row.
+  factory Canon.fromRows(
+    String translationId,
+    List<Map<String, Object?>> rows,
+  ) {
+    final sorted = [...rows]
+      ..sort((a, b) => (a['position'] as int).compareTo(b['position'] as int));
+    final all = [
+      for (final r in sorted)
+        Book(
+          id: r['id'] as int,
+          code: r['code'] as String,
+          name: r['name'] as String,
+          referenceName: r['reference_name'] as String,
+          shortName: r['short_name'] as String,
+          verseCounts: [
+            for (final n in (r['verse_counts'] as String).split(','))
+              if (n.isNotEmpty) int.parse(n),
+          ],
+          isNewTestament: (r['id'] as int) >= 40 && (r['id'] as int) <= 66,
+        ),
+    ];
+    // eBible.org numbers the deuterocanon after Revelation; it reads before
+    // Matthew, as the Old Testament it belongs to.
+    final books = [
+      ...all.where((b) => !b.isNewTestament),
+      ...all.where((b) => b.isNewTestament),
+    ];
+    List<List<int>> rowsOf(Iterable<Book> part) {
+      final ids = [for (final b in part) b.id];
+      return [
+        for (var i = 0; i < ids.length; i += 6)
+          ids.sublist(i, i + 6 > ids.length ? ids.length : i + 6),
+      ];
+    }
+
+    // Each row is a section of its own, so the shading alternates by row.
+    return Canon(
+      translationId: translationId,
+      books: books,
+      gridSections: [
+        for (final row in rowsOf(books.where((b) => !b.isNewTestament))) [row],
+        for (final row in rowsOf(books.where((b) => b.isNewTestament))) [row],
+      ],
+    );
+  }
+
   /// The canon every screen reads: the BSB's until another translation opens.
   static Canon current = Canon.bsb();
 
   /// The translation these books belong to, as its highlights and notes
   /// record it.
   final String translationId;
+
+  /// Whether these are the BSB's books, which alone have the interlinear,
+  /// the lexicons, audio and the outside links.
+  bool get isBsb => translationId == 'bsb';
 
   final List<Book> books;
 

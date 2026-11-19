@@ -421,7 +421,7 @@ void main() {
         await tester.pumpAndSettle();
 
         await tester.scrollUntilVisible(
-          find.text('British English Spelling'),
+          find.textContaining('uses American spelling'),
           150,
         );
         expect(find.text('Bible Text'), findsOneWidget);
