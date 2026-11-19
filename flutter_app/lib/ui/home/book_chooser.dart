@@ -1,10 +1,10 @@
 import 'dart:math' as math;
 
 import 'package:bsb/app_state.dart';
+import 'package:bsb/infrastructure/canon.dart';
 import 'package:bsb/infrastructure/service_locator.dart';
 import 'package:bsb/ui/home/chapter_chooser.dart';
 import 'package:bsb/ui/settings/user_settings.dart';
-import 'package:database_builder/database_builder.dart';
 import 'package:material_ui/material_ui.dart';
 
 enum ChapterSelectionState { start, selecting, end }
@@ -24,121 +24,10 @@ class _BookChooserScope extends InheritedWidget {
   }
 }
 
-class _BookData {
-  const _BookData({
-    required this.title,
-    required this.bookId,
-    required this.chapterCount,
-  });
-
-  final String title;
-  final int bookId;
-  final int chapterCount;
-}
-
-const List<List<_BookData>> _bookRows = [
-  // Pentateuch (5)
-  [
-    _BookData(title: 'Gen', bookId: 1, chapterCount: 50),
-    _BookData(title: 'Exo', bookId: 2, chapterCount: 40),
-    _BookData(title: 'Lev', bookId: 3, chapterCount: 27),
-    _BookData(title: 'Num', bookId: 4, chapterCount: 36),
-    _BookData(title: 'Deut', bookId: 5, chapterCount: 34),
-  ],
-  // Historical 1 (5)
-  [
-    _BookData(title: 'Josh', bookId: 6, chapterCount: 24),
-    _BookData(title: 'Judg', bookId: 7, chapterCount: 21),
-    _BookData(title: 'Ruth', bookId: 8, chapterCount: 4),
-    _BookData(title: '1Sam', bookId: 9, chapterCount: 31),
-    _BookData(title: '2Sam', bookId: 10, chapterCount: 24),
-  ],
-  // Historical 2 (7)
-  [
-    _BookData(title: '1Ki', bookId: 11, chapterCount: 22),
-    _BookData(title: '2Ki', bookId: 12, chapterCount: 25),
-    _BookData(title: '1Ch', bookId: 13, chapterCount: 29),
-    _BookData(title: '2Ch', bookId: 14, chapterCount: 36),
-    _BookData(title: 'Ezra', bookId: 15, chapterCount: 10),
-    _BookData(title: 'Neh', bookId: 16, chapterCount: 13),
-    _BookData(title: 'Est', bookId: 17, chapterCount: 10),
-  ],
-  // Wisdom (5)
-  [
-    _BookData(title: 'Job', bookId: 18, chapterCount: 42),
-    _BookData(title: 'Psa', bookId: 19, chapterCount: 150),
-    _BookData(title: 'Prov', bookId: 20, chapterCount: 31),
-    _BookData(title: 'Eccl', bookId: 21, chapterCount: 12),
-    _BookData(title: 'Song', bookId: 22, chapterCount: 8),
-  ],
-  // Major Prophets (5)
-  [
-    _BookData(title: 'Isa', bookId: 23, chapterCount: 66),
-    _BookData(title: 'Jer', bookId: 24, chapterCount: 52),
-    _BookData(title: 'Lam', bookId: 25, chapterCount: 5),
-    _BookData(title: 'Ezek', bookId: 26, chapterCount: 48),
-    _BookData(title: 'Dan', bookId: 27, chapterCount: 12),
-  ],
-  // Minor Prophets 1 (6)
-  [
-    _BookData(title: 'Hos', bookId: 28, chapterCount: 14),
-    _BookData(title: 'Joel', bookId: 29, chapterCount: 3),
-    _BookData(title: 'Amos', bookId: 30, chapterCount: 9),
-    _BookData(title: 'Oba', bookId: 31, chapterCount: 1),
-    _BookData(title: 'Jon', bookId: 32, chapterCount: 4),
-    _BookData(title: 'Mic', bookId: 33, chapterCount: 7),
-  ],
-  // Minor Prophets 2 (6)
-  [
-    _BookData(title: 'Nam', bookId: 34, chapterCount: 3),
-    _BookData(title: 'Hab', bookId: 35, chapterCount: 3),
-    _BookData(title: 'Zeph', bookId: 36, chapterCount: 3),
-    _BookData(title: 'Hag', bookId: 37, chapterCount: 2),
-    _BookData(title: 'Zec', bookId: 38, chapterCount: 14),
-    _BookData(title: 'Mal', bookId: 39, chapterCount: 4),
-  ],
-  // Gospels (5)
-  [
-    _BookData(title: 'Matt', bookId: 40, chapterCount: 28),
-    _BookData(title: 'Mark', bookId: 41, chapterCount: 16),
-    _BookData(title: 'Luke', bookId: 42, chapterCount: 24),
-    _BookData(title: 'John', bookId: 43, chapterCount: 21),
-    _BookData(title: 'Acts', bookId: 44, chapterCount: 28),
-  ],
-  // Pauline Epistles (7)
-  [
-    _BookData(title: 'Rom', bookId: 45, chapterCount: 16),
-    _BookData(title: '1Co', bookId: 46, chapterCount: 16),
-    _BookData(title: '2Co', bookId: 47, chapterCount: 13),
-    _BookData(title: 'Gal', bookId: 48, chapterCount: 6),
-    _BookData(title: 'Eph', bookId: 49, chapterCount: 6),
-    _BookData(title: 'Php', bookId: 50, chapterCount: 4),
-    _BookData(title: 'Col', bookId: 51, chapterCount: 4),
-  ],
-  // Pastoral Epistles (6)
-  [
-    _BookData(title: '1Th', bookId: 52, chapterCount: 5),
-    _BookData(title: '2Th', bookId: 53, chapterCount: 3),
-    _BookData(title: '1Ti', bookId: 54, chapterCount: 6),
-    _BookData(title: '2Ti', bookId: 55, chapterCount: 4),
-    _BookData(title: 'Tit', bookId: 56, chapterCount: 3),
-    _BookData(title: 'Phm', bookId: 57, chapterCount: 1),
-  ],
-  // General Epistles 1 (4)
-  [
-    _BookData(title: 'Heb', bookId: 58, chapterCount: 13),
-    _BookData(title: 'James', bookId: 59, chapterCount: 5),
-    _BookData(title: '1Pet', bookId: 60, chapterCount: 5),
-    _BookData(title: '2Pet', bookId: 61, chapterCount: 3),
-  ],
-  // General Epistles 2 (5)
-  [
-    _BookData(title: '1Jn', bookId: 62, chapterCount: 5),
-    _BookData(title: '2Jn', bookId: 63, chapterCount: 1),
-    _BookData(title: '3Jn', bookId: 64, chapterCount: 1),
-    _BookData(title: 'Jude', bookId: 65, chapterCount: 1),
-    _BookData(title: 'Rev', bookId: 66, chapterCount: 22),
-  ],
+/// The rows of the book grid, each with the index of its section.
+List<(int, List<Book>)> _gridRows(Canon canon) => [
+  for (final (section, rows) in canon.gridSections.indexed)
+    for (final row in rows) (section, [for (final id in row) canon[id]!]),
 ];
 
 class BookChooser extends StatefulWidget {
@@ -172,53 +61,21 @@ class _BookChooserState extends State<BookChooser> {
   final _overlayController = OverlayPortalController();
   final _gridKey = GlobalKey();
 
-  _BookData? _activeBook;
+  Book? _activeBook;
   Rect? _activeBookRect;
   Offset? _pointerDownPosition;
   Duration? _pointerDownTime;
-  _BookData? _startBook;
+  Book? _startBook;
 
-  int? get _highlightedBookId => _activeBook?.bookId;
+  int? get _highlightedBookId => _activeBook?.id;
 
-  Color get ot1 => Theme.of(context).colorScheme.surfaceContainerLow;
-  Color get ot2 => Theme.of(context).colorScheme.surfaceContainerHigh;
-  Color get nt1 => Theme.of(context).colorScheme.surfaceContainerLow;
-  Color get nt2 => Theme.of(context).colorScheme.surfaceContainerHigh;
-
-  Color get pentateuchColor => ot1;
-  Color get historicalColor => ot2;
-  Color get wisdomColor => ot1;
-  Color get majorProphetsColor => ot2;
-  Color get minorProphetsColor => ot1;
-  Color get gospelsColor => nt2;
-  Color get paulineColor => nt1;
-  Color get generalEpistlesColor => nt2;
+  List<(int, List<Book>)> get _rows => _gridRows(Canon.current);
 
   Color _getRowColor(int rowIndex) {
-    switch (rowIndex) {
-      case 0:
-        return pentateuchColor;
-      case 1:
-      case 2:
-        return historicalColor;
-      case 3:
-        return wisdomColor;
-      case 4:
-        return majorProphetsColor;
-      case 5:
-      case 6:
-        return minorProphetsColor;
-      case 7:
-        return gospelsColor;
-      case 8:
-      case 9:
-        return paulineColor;
-      case 10:
-      case 11:
-        return generalEpistlesColor;
-      default:
-        return ot1;
-    }
+    final colors = Theme.of(context).colorScheme;
+    return _rows[rowIndex].$1.isEven
+        ? colors.surfaceContainerLow
+        : colors.surfaceContainerHigh;
   }
 
   void _onBookSelected(int bookId, int chapterCount) {
@@ -279,7 +136,7 @@ class _BookChooserState extends State<BookChooser> {
     return fallbackLocal;
   }
 
-  (_BookData?, Rect?) _getBookAndRectAt(
+  (Book?, Rect?) _getBookAndRectAt(
     Offset position,
     double totalWidth,
     double totalHeight,
@@ -290,10 +147,11 @@ class _BookChooserState extends State<BookChooser> {
         position.dy > totalHeight) {
       return (null, null);
     }
-    const rowCount = 12;
+    final rows = _rows;
+    final rowCount = rows.length;
     final rowHeight = totalHeight / rowCount;
     final rowIndex = (position.dy / rowHeight).floor().clamp(0, rowCount - 1);
-    final row = _bookRows[rowIndex];
+    final row = rows[rowIndex].$2;
     final colWidth = totalWidth / row.length;
     final colIndex = (position.dx / colWidth).floor().clamp(0, row.length - 1);
     final book = row[colIndex];
@@ -414,12 +272,12 @@ class _BookChooserState extends State<BookChooser> {
 
     if (isVerticalSwipe) {
       if (delta.dy < 0) {
-        _goToFirstChapter(startBook.bookId);
+        _goToFirstChapter(startBook.id);
       } else {
-        _goToLastChapter(startBook.bookId, startBook.chapterCount);
+        _goToLastChapter(startBook.id, startBook.chapterCount);
       }
     } else if (activeBook != null) {
-      _onBookSelected(activeBook.bookId, activeBook.chapterCount);
+      _onBookSelected(activeBook.id, activeBook.chapterCount);
     }
   }
 
@@ -475,7 +333,7 @@ class _BookChooserState extends State<BookChooser> {
 
     final theme = Theme.of(context);
     final book = _activeBook!;
-    final fullName = bookIdToBookNameMap[book.bookId] ?? book.title;
+    final fullName = Canon.current[book.id]?.name ?? book.shortName;
 
     final textStyle =
         theme.textTheme.titleLarge?.copyWith(
@@ -532,7 +390,7 @@ class _BookChooserState extends State<BookChooser> {
   }
 
   Expanded _buildRow(int rowIndex) {
-    final row = _bookRows[rowIndex];
+    final row = _rows[rowIndex].$2;
     final color = _getRowColor(rowIndex);
     return Expanded(
       child: Row(
@@ -540,33 +398,20 @@ class _BookChooserState extends State<BookChooser> {
         children: [
           for (final book in row)
             BookItem(
-              title: book.title,
-              fullName: bookIdToBookNameMap[book.bookId],
+              title: book.shortName,
+              fullName: Canon.current[book.id]?.name,
               color: color,
               onTap: _onBookSelected,
               onSwipeUp: _goToFirstChapter,
               onSwipeDown: _goToLastChapter,
-              bookId: book.bookId,
+              bookId: book.id,
               chapterCount: book.chapterCount,
-              isHighlighted: _highlightedBookId == book.bookId,
+              isHighlighted: _highlightedBookId == book.id,
             ),
         ],
       ),
     );
   }
-
-  Expanded _buildPentateuch() => _buildRow(0);
-  Expanded _buildHistorical1() => _buildRow(1);
-  Expanded _buildHistorical2() => _buildRow(2);
-  Expanded _buildWisdom() => _buildRow(3);
-  Expanded _buildMajorProphets() => _buildRow(4);
-  Expanded _buildMinorProphets1() => _buildRow(5);
-  Expanded _buildMinorProphets2() => _buildRow(6);
-  Expanded _buildGospels() => _buildRow(7);
-  Expanded _buildPaulineEpistles() => _buildRow(8);
-  Expanded _buildPastoralEpistles() => _buildRow(9);
-  Expanded _buildGeneralEpistles1() => _buildRow(10);
-  Expanded _buildGeneralEpistles2() => _buildRow(11);
 
   @override
   void dispose() {
@@ -606,18 +451,7 @@ class _BookChooserState extends State<BookChooser> {
                   onPointerCancel: _handlePointerCancel,
                   child: Column(
                     children: [
-                      _buildPentateuch(),
-                      _buildHistorical1(),
-                      _buildHistorical2(),
-                      _buildWisdom(),
-                      _buildMajorProphets(),
-                      _buildMinorProphets1(),
-                      _buildMinorProphets2(),
-                      _buildGospels(),
-                      _buildPaulineEpistles(),
-                      _buildPastoralEpistles(),
-                      _buildGeneralEpistles1(),
-                      _buildGeneralEpistles2(),
+                      for (var i = 0; i < _rows.length; i++) _buildRow(i),
                     ],
                   ),
                 ),
@@ -711,7 +545,7 @@ class _BookItemState extends State<BookItem> {
   String _getDisplayTitle(BuildContext context) {
     if (_shouldUseFullName(context)) {
       return widget.fullName ??
-          bookIdToBookNameMap[widget.bookId] ??
+          Canon.current[widget.bookId]?.name ??
           widget.title;
     }
     return widget.title;

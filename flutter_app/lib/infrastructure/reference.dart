@@ -1,4 +1,4 @@
-import 'package:database_builder/database_builder.dart';
+import 'package:bsb/infrastructure/canon.dart';
 
 class Reference {
   Reference({
@@ -7,7 +7,7 @@ class Reference {
     this.verse,
     this.endVerse,
     this.endChapter,
-  }) : assert(bookId >= 1 && bookId <= 66),
+  }) : assert(bookId >= 1),
        assert(chapter >= 1 && chapter <= 150),
        assert(endChapter == null || endChapter >= chapter),
        assert(verse == null || verse >= 0),
@@ -121,13 +121,13 @@ class Reference {
           .group(1)!
           .replaceAll(RegExp(r'\s+'), ' ')
           .trim();
-      final bookId = fullNameToBookIdMap[bookName];
+      final bookId = Canon.current.bookIdForName(bookName);
       if (bookId == null) return null;
       final startChapter = int.parse(crossMatch.group(2)!);
       final startVerse = int.parse(crossMatch.group(3)!);
       final endChapter = int.parse(crossMatch.group(4)!);
       final endVerse = int.parse(crossMatch.group(5)!);
-      final maxChapters = bookIdToChapterCountMap[bookId] ?? 150;
+      final maxChapters = Canon.current[bookId]?.chapterCount ?? 150;
       if (startChapter < 1 || startChapter > maxChapters) return null;
       if (endChapter < startChapter || endChapter > maxChapters) return null;
       if (endChapter == startChapter && endVerse < startVerse) return null;
@@ -162,12 +162,12 @@ class Reference {
         ? int.parse(match.group(5)!)
         : null;
 
-    final bookId = fullNameToBookIdMap[bookName];
+    final bookId = Canon.current.bookIdForName(bookName);
     if (bookId == null) {
       return null;
     }
 
-    final maxChapters = bookIdToChapterCountMap[bookId] ?? 150;
+    final maxChapters = Canon.current[bookId]?.chapterCount ?? 150;
     if (chapter < 1 || chapter > maxChapters) {
       return null;
     }
@@ -192,15 +192,12 @@ class Reference {
 
   @override
   String toString() {
+    // A range of whole chapters takes the book's name: "Psalms 56–60".
+    final book = Canon.current[bookId];
     final bookName =
-        (bookId == 19 &&
-            endChapter != null &&
-            endChapter != chapter &&
-            verse == null)
-        ? 'Psalms'
-        : (bookId == 19 && verse != null)
-        ? 'Psalm'
-        : bookIdToFullNameMap[bookId];
+        (endChapter != null && endChapter != chapter && verse == null)
+        ? book?.name
+        : book?.referenceName;
     if (verse == null) {
       if (endChapter != null && endChapter != chapter) {
         return '$bookName $chapter–$endChapter';

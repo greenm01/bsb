@@ -1,6 +1,6 @@
 import 'dart:convert';
 
-import 'package:database_builder/database_builder.dart';
+import 'package:bsb/infrastructure/canon.dart';
 
 enum PlanTrack {
   throughTheBible(
@@ -95,8 +95,7 @@ class PlanReading {
 
   String get referenceDisplay {
     final bookName =
-        bookIdToFullNameMap[bookId] ??
-        (bookIdToBookNameMap[bookId] ?? 'Book $bookId');
+        Canon.current[bookId]?.referenceName ?? 'Book $bookId';
     if (startChapter == endChapter) {
       return '$bookName $startChapter';
     }

@@ -1,12 +1,11 @@
 import 'dart:math';
 
 import 'package:bsb/app_state.dart';
+import 'package:bsb/infrastructure/canon.dart';
 import 'package:bsb/infrastructure/section_heading.dart';
 import 'package:bsb/infrastructure/service_locator.dart';
-import 'package:bsb/infrastructure/verse_counts.dart';
 import 'package:bsb/ui/home/section_headings_dialog.dart';
 import 'package:bsb/ui/settings/user_settings.dart';
-import 'package:database_builder/database_builder.dart';
 import 'package:flutter/gestures.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter/rendering.dart';
@@ -128,12 +127,12 @@ class _ChapterChooserState extends State<ChapterChooser> {
     final bookId =
         widget.bookId ??
         (widget.bookName != null
-            ? fullNameToBookIdMap[widget.bookName] ?? 1
+            ? Canon.current.bookIdForName(widget.bookName) ?? 1
             : 1);
     if (widget.verseCountLoader != null) {
       return widget.verseCountLoader!(bookId, chapter);
     }
-    return getVerseCountForBookAndChapter(bookId, chapter);
+    return Canon.current.verseCount(bookId, chapter);
   }
 
   void _onChapterChosen(int? chapter) {
@@ -684,10 +683,11 @@ class _KeypadChapterChooserState extends State<KeypadChapterChooser> {
   String get _displayBookName {
     final resolvedBookId =
         widget.bookId ??
-        (widget.bookName != null ? fullNameToBookIdMap[widget.bookName] : null);
-    if (resolvedBookId != null &&
-        bookIdToBookNameMap.containsKey(resolvedBookId)) {
-      return bookIdToBookNameMap[resolvedBookId]!;
+        (widget.bookName != null
+            ? Canon.current.bookIdForName(widget.bookName)
+            : null);
+    if (resolvedBookId != null && (Canon.current[resolvedBookId] != null)) {
+      return Canon.current[resolvedBookId]!.name;
     }
     if (widget.bookName != null && widget.bookName!.isNotEmpty) {
       return widget.bookName!;
@@ -748,11 +748,11 @@ class KeypadVerseChooser extends StatelessWidget {
 
   String get _displayTitle {
     final resolvedBookId =
-        bookId ?? (bookName != null ? fullNameToBookIdMap[bookName] : null);
+        bookId ??
+        (bookName != null ? Canon.current.bookIdForName(bookName) : null);
     final bName =
-        (resolvedBookId != null &&
-            bookIdToFullNameMap.containsKey(resolvedBookId))
-        ? bookIdToFullNameMap[resolvedBookId]!
+        (resolvedBookId != null && (Canon.current[resolvedBookId] != null))
+        ? Canon.current[resolvedBookId]!.referenceName
         : (bookName ?? '');
     final name = (bName == 'Psalms') ? 'Psalm' : bName;
     return '$name $chapter';
@@ -799,10 +799,11 @@ class _GridChapterChooserState extends State<GridChapterChooser> {
   String get _displayBookName {
     final resolvedBookId =
         widget.bookId ??
-        (widget.bookName != null ? fullNameToBookIdMap[widget.bookName] : null);
-    if (resolvedBookId != null &&
-        bookIdToBookNameMap.containsKey(resolvedBookId)) {
-      return bookIdToBookNameMap[resolvedBookId]!;
+        (widget.bookName != null
+            ? Canon.current.bookIdForName(widget.bookName)
+            : null);
+    if (resolvedBookId != null && (Canon.current[resolvedBookId] != null)) {
+      return Canon.current[resolvedBookId]!.name;
     }
     if (widget.bookName != null && widget.bookName!.isNotEmpty) {
       return widget.bookName!;
@@ -964,10 +965,11 @@ class _GridVerseChooserState extends State<GridVerseChooser> {
   String get _displayBookName {
     final resolvedBookId =
         widget.bookId ??
-        (widget.bookName != null ? fullNameToBookIdMap[widget.bookName] : null);
-    if (resolvedBookId != null &&
-        bookIdToFullNameMap.containsKey(resolvedBookId)) {
-      return bookIdToFullNameMap[resolvedBookId]!;
+        (widget.bookName != null
+            ? Canon.current.bookIdForName(widget.bookName)
+            : null);
+    if (resolvedBookId != null && (Canon.current[resolvedBookId] != null)) {
+      return Canon.current[resolvedBookId]!.referenceName;
     }
     if (widget.bookName != null && widget.bookName!.isNotEmpty) {
       if (widget.bookName == 'Psalms') {

@@ -1,8 +1,8 @@
 import 'package:bsb/app_state.dart';
+import 'package:bsb/infrastructure/canon.dart';
 import 'package:bsb/infrastructure/service_locator.dart';
 import 'package:bsb/ui/home/chapter_chooser.dart';
 import 'package:bsb/ui/settings/user_settings.dart';
-import 'package:database_builder/database_builder.dart';
 import 'package:material_ui/material_ui.dart';
 
 class ListBookChooser extends StatefulWidget {
@@ -29,14 +29,10 @@ class ListBookChooser extends StatefulWidget {
 class _ListBookChooserState extends State<ListBookChooser> {
   final _chapterNotifier = ValueNotifier<(int, int)?>(null);
 
-  static final List<int> _oldTestamentBooks = List.generate(
-    39,
-    (index) => index + 1,
-  ); // 1..39
-  static final List<int> _newTestamentBooks = List.generate(
-    27,
-    (index) => index + 40,
-  ); // 40..66
+  List<int> _testamentBooks({required bool newTestament}) => [
+    for (final book in Canon.current.books)
+      if (book.isNewTestament == newTestament) book.id,
+  ];
 
   @override
   void dispose() {
@@ -76,14 +72,14 @@ class _ListBookChooserState extends State<ListBookChooser> {
             Expanded(
               child: _buildList(
                 storageKey: 'old_testament',
-                bookIds: _oldTestamentBooks,
+                bookIds: _testamentBooks(newTestament: false),
               ),
             ),
             const VerticalDivider(width: 1, thickness: 1),
             Expanded(
               child: _buildList(
                 storageKey: 'new_testament',
-                bookIds: _newTestamentBooks,
+                bookIds: _testamentBooks(newTestament: true),
               ),
             ),
           ],
@@ -132,8 +128,8 @@ class _ListBookChooserState extends State<ListBookChooser> {
           const Divider(height: 1, thickness: 0.5),
       itemBuilder: (context, index) {
         final bookId = bookIds[index];
-        final bookName = bookIdToBookNameMap[bookId] ?? '';
-        final chapterCount = bookIdToChapterCountMap[bookId] ?? 1;
+        final bookName = Canon.current[bookId]?.name ?? '';
+        final chapterCount = Canon.current[bookId]?.chapterCount ?? 1;
 
         return ListTile(
           dense: true,

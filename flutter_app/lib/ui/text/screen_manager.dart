@@ -1,3 +1,4 @@
+import 'package:bsb/infrastructure/canon.dart';
 import 'package:bsb/infrastructure/reference.dart';
 import 'package:database_builder/database_builder.dart';
 import 'package:material_ui/material_ui.dart';
@@ -6,9 +7,6 @@ import 'package:flutter/scheduler.dart';
 /// This class manages the whole screen while TextPageManager only
 /// handles one PageView page.
 class TextScreenManager {
-  static const _chaptersInBible = 1189;
-  static const maxPageIndex = _chaptersInBible - 1;
-
   final titleNotifier = ValueNotifier<String>('');
 
   void updateTitle({required int? index}) {
@@ -22,37 +20,21 @@ class TextScreenManager {
 
   (int bookId, int chapter) currentBookAndChapterCount(int index) {
     final (bookId, _) = bookAndChapterForPageIndex(index);
-    final chapterCount = bookIdToChapterCountMap[bookId]!;
-    return (bookId, chapterCount);
+    return (bookId, Canon.current[bookId]!.chapterCount);
   }
 
   (int bookId, int chapter) bookAndChapterForPageIndex(int index) {
-    int pageIndex = index % (maxPageIndex + 1);
-
-    int currentBookId = 1;
-    int currentChapter = 1;
-    int remainingIndex = pageIndex;
-
-    // Find the book based on index
-    for (final entry in bookIdToChapterCountMap.entries) {
-      if (remainingIndex < entry.value) {
-        currentBookId = entry.key;
-        currentChapter = remainingIndex + 1;
-        break;
-      }
-      remainingIndex -= entry.value;
-    }
-
-    return (currentBookId, currentChapter);
+    final canon = Canon.current;
+    return canon.chapterAtPage(index % canon.pageCount);
   }
 
   String _formatTitle(int bookId, int chapter, [int? verse]) {
-    final book = bookIdToFullNameMap[bookId]!;
+    final book = Canon.current[bookId]!.referenceName;
     return verse != null ? '$book $chapter:$verse' : '$book $chapter';
   }
 
   int pageIndexForBookAndChapter({required int bookId, required int chapter}) {
-    return bookIdToChapterIndexMap[bookId]! + chapter - 1;
+    return Canon.current.pageIndex(bookId, chapter)!;
   }
 
   Language verseLanguageLabel(int pageIndex, Reference reference) {

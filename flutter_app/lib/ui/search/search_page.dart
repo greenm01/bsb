@@ -1,10 +1,10 @@
 import 'package:bsb/app_state.dart';
+import 'package:bsb/infrastructure/canon.dart';
 import 'package:bsb/infrastructure/search/search_models.dart';
 import 'package:bsb/infrastructure/service_locator.dart';
 import 'package:bsb/ui/search/search_manager.dart';
 import 'package:bsb/ui/settings/user_settings.dart';
 import 'package:bsb/ui/tabs/tab_manager.dart';
-import 'package:database_builder/database_builder.dart';
 import 'package:material_ui/material_ui.dart';
 
 class SearchPage extends StatefulWidget {
@@ -379,7 +379,7 @@ class _SearchPageState extends State<SearchPage> {
 
   Widget _buildSearchResultTile(SearchResult item) {
     final ref = item.reference;
-    final bookName = bookIdToFullNameMap[ref.bookId] ?? '';
+    final bookName = Canon.current[ref.bookId]?.referenceName ?? '';
     final refTitle = '$bookName ${ref.chapter}:${ref.verse}';
     final textSize = getIt.isRegistered<AppState>()
         ? getIt<AppState>().textSizeNotifier.value

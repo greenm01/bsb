@@ -1,13 +1,12 @@
 import 'dart:async';
 
 import 'package:app_links/app_links.dart';
-import 'package:database_builder/database_builder.dart';
 import 'package:material_ui/material_ui.dart';
 
 import '../ui/playlists/playlist_share_handler.dart';
 import '../ui/tabs/tab_manager.dart';
+import 'canon.dart';
 import 'service_locator.dart';
-import 'verse_counts.dart';
 
 class DeepLinkHandler {
   DeepLinkHandler({
@@ -89,14 +88,8 @@ class DeepLinkHandler {
       return;
     }
 
-    // Validate book ID (1..66)
-    if (bookId < 1 || bookId > 66) {
-      _showInvalidLinkError(context);
-      return;
-    }
-
-    // Validate chapter count for this book
-    final maxChapters = bookIdToChapterCountMap[bookId] ?? 0;
+    // Validate the book and its chapter count in the open translation
+    final maxChapters = Canon.current[bookId]?.chapterCount ?? 0;
     if (chapter < 1 || chapter > maxChapters) {
       _showInvalidLinkError(context);
       return;
@@ -104,7 +97,7 @@ class DeepLinkHandler {
 
     // Validate verse count if verse was provided
     if (verse != null) {
-      final maxVerses = chapterVerseCounts[bookId]?[chapter - 1] ?? 0;
+      final maxVerses = Canon.current.verseCount(bookId, chapter);
       if (verse < 1 || verse > maxVerses) {
         _showInvalidLinkError(context);
         return;

@@ -1,8 +1,8 @@
 import 'package:bsb/app_state.dart';
+import 'package:bsb/infrastructure/canon.dart';
 import 'package:bsb/infrastructure/database.dart';
 import 'package:bsb/infrastructure/reference.dart';
 import 'package:bsb/infrastructure/service_locator.dart';
-import 'package:bsb/infrastructure/verse_counts.dart';
 import 'package:bsb/ui/home/book_chooser.dart';
 import 'package:bsb/ui/home/chapter_chooser.dart';
 import 'package:bsb/ui/home/list_book_chooser.dart';
@@ -278,8 +278,8 @@ class _PassageRangePickerDialogState extends State<PassageRangePickerDialog> {
         userSettings?.chapterChooserStyle ??
         ChapterChooserStyle.keypad;
 
-    final maxChapters = bookIdToChapterCountMap[_bookId!] ?? 1;
-    final bookName = bookIdToBookNameMap[_bookId!] ?? '';
+    final maxChapters = Canon.current[_bookId!]?.chapterCount ?? 1;
+    final bookName = Canon.current[_bookId!]?.name ?? '';
     final initialChapter = isStart ? _startChapter : _endChapter;
 
     final chosenChapter = await showDialog<int>(
@@ -316,10 +316,7 @@ class _PassageRangePickerDialogState extends State<PassageRangePickerDialog> {
         _endWordId = null;
         if (isStart) {
           _startChapter = chosenChapter;
-          final maxVerses = getVerseCountForBookAndChapter(
-            _bookId!,
-            chosenChapter,
-          );
+          final maxVerses = Canon.current.verseCount(_bookId!, chosenChapter);
           if (_startVerse != null && _startVerse! > maxVerses) {
             _startVerse = 1;
           }
@@ -341,10 +338,7 @@ class _PassageRangePickerDialogState extends State<PassageRangePickerDialog> {
           }
         } else {
           _endChapter = chosenChapter;
-          final maxVerses = getVerseCountForBookAndChapter(
-            _bookId!,
-            chosenChapter,
-          );
+          final maxVerses = Canon.current.verseCount(_bookId!, chosenChapter);
           if (_endVerse != null && _endVerse! > maxVerses) {
             _endVerse = maxVerses;
           }
@@ -384,8 +378,8 @@ class _PassageRangePickerDialogState extends State<PassageRangePickerDialog> {
         userSettings?.verseChooserStyle ??
         VerseChooserStyle.sidebar;
 
-    final maxVerses = getVerseCountForBookAndChapter(_bookId!, targetChapter);
-    final bookName = bookIdToBookNameMap[_bookId!] ?? '';
+    final maxVerses = Canon.current.verseCount(_bookId!, targetChapter);
+    final bookName = Canon.current[_bookId!]?.name ?? '';
 
     final chosenVerse = await showDialog<int>(
       context: context,
@@ -580,7 +574,7 @@ class _PassageRangePickerDialogState extends State<PassageRangePickerDialog> {
   Widget _buildSelectorRow(ThemeData theme) {
     final bookLabel = _bookId == null
         ? 'Book'
-        : (bookIdToBookNameMap[_bookId] ?? 'Book');
+        : (Canon.current[_bookId]?.name ?? 'Book');
     final startChLabel = _startChapter == null ? 'Ch' : '$_startChapter';
     final startVsLabel = _startVerse == null ? 'Vs' : '$_startVerse';
     final endChLabel = _endChapter == null ? 'Ch' : '$_endChapter';

@@ -1,4 +1,4 @@
-import 'package:database_builder/database_builder.dart';
+import 'package:bsb/infrastructure/canon.dart';
 import 'package:uuid/uuid.dart';
 
 class BibleTab {
@@ -29,7 +29,7 @@ class BibleTab {
     if (isPlaylist) {
       return playlistTitle ?? 'Playlist';
     }
-    final abbrev = bookIdToAbbreviationMap[bookId] ?? '';
+    final abbrev = Canon.current[bookId]?.code ?? '';
     return '$abbrev $chapter';
   }
 
@@ -37,7 +37,7 @@ class BibleTab {
     if (isPlaylist) {
       return playlistTitle ?? 'Playlist';
     }
-    final book = bookIdToFullNameMap[bookId] ?? '';
+    final book = Canon.current[bookId]?.referenceName ?? '';
     return '$book $chapter';
   }
 

@@ -1,10 +1,10 @@
 import 'dart:async';
 
+import 'package:bsb/infrastructure/canon.dart';
 import 'package:bsb/infrastructure/search/bible_search_service.dart';
 import 'package:bsb/infrastructure/search/search_models.dart';
 import 'package:bsb/infrastructure/service_locator.dart';
 import 'package:bsb/ui/settings/user_settings.dart';
-import 'package:database_builder/database_builder.dart';
 import 'package:flutter/foundation.dart';
 
 class SearchManager {
@@ -119,7 +119,7 @@ class SearchManager {
               .map(
                 (e) => BookMatch(
                   bookId: e.key,
-                  bookName: bookIdToBookNameMap[e.key] ?? 'Book ${e.key}',
+                  bookName: Canon.current[e.key]?.name ?? 'Book ${e.key}',
                   count: e.value,
                 ),
               )

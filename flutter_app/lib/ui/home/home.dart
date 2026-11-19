@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:bsb/app_state.dart';
 import 'package:bsb/infrastructure/audio/audio_playback_manager.dart';
+import 'package:bsb/infrastructure/canon.dart';
 import 'package:bsb/infrastructure/deep_link_handler.dart';
 import 'package:bsb/infrastructure/playlist_service.dart';
 import 'package:bsb/infrastructure/service_locator.dart';
@@ -18,7 +19,6 @@ import 'package:bsb/ui/settings/user_settings.dart';
 import 'package:bsb/ui/tabs/chapter_tabs_bar.dart';
 import 'package:bsb/ui/tabs/tab_manager.dart';
 import 'package:bsb/ui/text/text_screen.dart';
-import 'package:database_builder/database_builder.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter/services.dart';
 
@@ -338,7 +338,9 @@ class _HomePageState extends State<HomePage> {
                                         return;
                                       }
                                       final chapterCount =
-                                          bookIdToChapterCountMap[tab.bookId] ??
+                                          Canon
+                                              .current[tab.bookId]
+                                              ?.chapterCount ??
                                           1;
                                       final initialChapter =
                                           _resolveShowVerseGrid()

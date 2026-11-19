@@ -6,6 +6,7 @@ import 'package:bsb/app_state.dart';
 import 'package:bsb/infrastructure/annotation_models.dart';
 import 'package:bsb/infrastructure/audio/audio_playback_manager.dart';
 import 'package:bsb/infrastructure/bsb_text_localizer.dart';
+import 'package:bsb/infrastructure/canon.dart';
 import 'package:bsb/infrastructure/database.dart';
 import 'package:bsb/infrastructure/reading_plan_models.dart';
 import 'package:bsb/infrastructure/reading_plan_service.dart';
@@ -22,7 +23,6 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/gestures.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter/rendering.dart' show BoxParentData;
-import 'package:database_builder/database_builder.dart';
 import 'package:scripture/scripture.dart';
 
 class ChapterText extends StatefulWidget {
@@ -99,11 +99,7 @@ class _ChapterTextState extends State<ChapterText>
   bool get wantKeepAlive => true;
 
   String get _chapterTitle {
-    final book =
-        bookIdToFullNameMap[widget.bookId] ??
-        (bookIdToBookNameMap[widget.bookId] == 'Psalms'
-            ? 'Psalm'
-            : bookIdToBookNameMap[widget.bookId] ?? '');
+    final book = Canon.current[widget.bookId]?.referenceName ?? '';
     return '$book ${widget.chapter}';
   }
 

@@ -1003,12 +1003,3 @@ const Map<int, List<int>> chapterVerseCounts = {
     21,
   ],
 };
-
-/// Returns the number of verses in the given book and chapter.
-int getVerseCountForBookAndChapter(int bookId, int chapter) {
-  final counts = chapterVerseCounts[bookId];
-  if (counts == null || chapter < 1 || chapter > counts.length) {
-    return 1;
-  }
-  return counts[chapter - 1];
-}
