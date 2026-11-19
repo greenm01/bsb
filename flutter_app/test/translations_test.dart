@@ -131,6 +131,7 @@ void main() {
       ]);
       expect(canon[1]!.verseCounts, [2, 1]);
       expect(canon[67]!.shortName, 'Tob');
+      expect(canon[40]!.shortName, 'Matt');
       expect(canon.pageCount, 4);
       expect(helper.useBritishSpelling, isFalse);
 

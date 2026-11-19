@@ -96,6 +96,17 @@ void main() {
     });
   });
 
+  test('books take the SBL abbreviations, the Septuagint names theirs', () {
+    expect(standardAbbreviation('MAN', 'Prayer of Manasses'), 'Pr Man');
+    expect(standardAbbreviation('ISA', 'Esaias'), 'Isa');
+    expect(standardAbbreviation('1SA', '1 Samuel'), '1 Sam');
+    expect(standardAbbreviation('1SA', '1 Kingdoms'), '1 Kgdms');
+    expect(standardAbbreviation('1KI', '3 Kingdoms'), '3 Kgdms');
+    expect(standardAbbreviation('EZR', 'Ezra'), 'Ezra');
+    expect(standardAbbreviation('EZR', '2 Esdras'), '2 Esd');
+    expect(standardAbbreviation('XXA', 'Extra'), isNull);
+  });
+
   test('a strict read takes the BSB layout and nothing else', () {
     final book = parseUsfmBook(r'''
 \id GEN - Berean Standard Bible

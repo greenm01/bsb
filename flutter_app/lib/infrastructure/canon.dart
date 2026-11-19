@@ -93,7 +93,14 @@ class Canon {
           code: r['code'] as String,
           name: r['name'] as String,
           referenceName: r['reference_name'] as String,
-          shortName: r['short_name'] as String,
+          // The standard abbreviation where there is one, and the
+          // translation's own otherwise.
+          shortName:
+              standardAbbreviation(
+                r['code'] as String,
+                r['reference_name'] as String,
+              ) ??
+              r['short_name'] as String,
           verseCounts: [
             for (final n in (r['verse_counts'] as String).split(','))
               if (n.isNotEmpty) int.parse(n),
