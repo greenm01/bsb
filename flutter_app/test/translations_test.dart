@@ -140,6 +140,11 @@ void main() {
       final found = await helper.searchVerses(query: 'Tobit');
       expect(found.map((r) => r.reference.bookId), [67]);
 
+      // Listing the translations reads each one's name; it must not close
+      // the database the reader has open.
+      await store.list();
+      expect(await helper.getChapter(67, 1), isNotEmpty);
+
       expect((await helper.openTranslation(Translation.bsb)).isBsb, isTrue);
       expect(helper.useBritishSpelling, isTrue);
       expect(await helper.getChapter(67, 1), isEmpty);

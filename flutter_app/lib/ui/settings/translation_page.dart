@@ -21,7 +21,9 @@ class _TranslationPageState extends State<TranslationPage> {
   final _appState = getIt<AppState>();
   late Future<List<Translation>> _translations = _store.list();
 
-  void _refresh() => setState(() => _translations = _store.list());
+  void _refresh() => setState(() {
+    _translations = _store.list();
+  });
 
   Future<void> _open(Translation translation) async {
     await _appState.openTranslation(translation);

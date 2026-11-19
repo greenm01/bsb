@@ -60,7 +60,9 @@ class TranslationStore {
     if (dir.existsSync()) {
       for (final file in dir.listSync().whereType<File>()) {
         if (extension(file.path) != '.db') continue;
-        final db = await openReadOnlyDatabase(file.path);
+        // A connection of its own: the shared one may be the translation the
+        // reader has open, which closing it here would close too.
+        final db = await openReadOnlyDatabase(file.path, singleInstance: false);
         try {
           final rows = await db.query(metaTable);
           final meta = {for (final r in rows) r['key']: r['value'] as String};
