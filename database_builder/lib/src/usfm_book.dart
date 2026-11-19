@@ -570,7 +570,83 @@ String _cleanInline(String text, void Function(String) adjust) {
     at = note.end;
   }
   out.write(_stripCharacters(text.substring(at), adjust));
-  return out.toString().replaceAll(RegExp(r'  +'), ' ').trim();
+  final cleaned = out.toString().replaceAll(RegExp(r'  +'), ' ').trim();
+  return _placeNotes(_joinNotes(cleaned, adjust), adjust);
+}
+
+/// A whole footnote, opened with `\f` and closed with `\f*`.
+const _note = r'\\f\s(?:(?!\\f\*).)*\\f\*';
+final _adjacentNotes = RegExp(
+  r'(\\f\s(?:(?!\\f\*).)*)\\f\*\s*\\f\s+\S\s+(?:\\fr\s[^\\]*)?((?:(?!\\f\*).)*)\\f\*',
+);
+final _noteAndText = RegExp('($_note)([^\\\\]*)');
+final _quoted = RegExp(r'\\fq\s([^\\]*)');
+final _word = RegExp(r'\S+');
+
+/// Notes on the same words join into one, as the BSB writes them: the
+/// second's text follows the first's after a semicolon, without its quote
+/// of the words where it repeats the first's.
+String _joinNotes(String text, void Function(String) adjust) {
+  while (true) {
+    final m = _adjacentNotes.firstMatch(text);
+    if (m == null) return text;
+    final first = m[1]!;
+    var second = m[2]!.trim();
+    final quote = _quoted.firstMatch(first)?[1]?.trim();
+    final repeated = _quoted.matchAsPrefix(second);
+    if (repeated != null && repeated[1]!.trim() == quote) {
+      second = second.substring(repeated.end).trim();
+    }
+    if (!second.startsWith(r'\')) second = '\\ft $second';
+    adjust('note joined');
+    text = text.replaceRange(m.start, m.end, '$first\\ft ; $second\\f*');
+  }
+}
+
+/// A note follows the words it is about, as the BSB places its notes: one
+/// written before them moves past the words its quote names, or failing
+/// those, past the next word, with any punctuation that closes them.
+String _placeNotes(String text, void Function(String) adjust) {
+  return text.replaceAllMapped(_noteAndText, (m) {
+    final note = m[1]!;
+    final after = m[2]!;
+    if (after.isEmpty || after.startsWith(RegExp(r'\s'))) return m[0]!;
+    final words = _word.allMatches(after).toList();
+    final end = words[_quotedWords(note, words) - 1].end;
+    adjust('note moved');
+    return '${after.substring(0, end)}$note${after.substring(end)}';
+  });
+}
+
+/// How many of the words after a note its quote names: as many as end the
+/// quote and begin the text, or, for a quote with an ellipsis, as many as
+/// reach its last part. One where the quote can't be found.
+int _quotedWords(String note, List<RegExpMatch> words) {
+  String plain(String w) =>
+      w.toLowerCase().replaceAll(RegExp(r'[^\p{L}\p{N}]', unicode: true), '');
+  final quote = _quoted.firstMatch(note)?[1]?.trim();
+  if (quote == null) return 1;
+  final text = [for (final w in words) plain(w[0]!)];
+  final parts = quote.split(RegExp(r'…|\.\.\.'));
+  final named = [
+    for (final w in parts.last.split(RegExp(r'\s+')))
+      if (plain(w).isNotEmpty) plain(w),
+  ];
+  if (named.isEmpty) return 1;
+  bool at(int i, List<String> seq) =>
+      i + seq.length <= text.length &&
+      [for (var j = 0; j < seq.length; j++) text[i + j] == seq[j]]
+          .every((x) => x);
+  if (parts.length > 1) {
+    for (var i = 0; i < text.length; i++) {
+      if (at(i, named)) return i + named.length;
+    }
+    return 1;
+  }
+  for (var k = named.length; k > 0; k--) {
+    if (at(0, named.sublist(named.length - k))) return k;
+  }
+  return 1;
 }
 
 String _stripCharacters(String text, void Function(String) adjust) {

@@ -96,6 +96,22 @@ void main() {
     });
   });
 
+  test('notes follow the words they are about, one to a place', () {
+    final book = parseUsfmBook(r'''
+\id JHN - Test
+\c 1
+\p
+\v 41 being interpreted, \f - \cat edition\cat*\fr 1:41 \fq Christ: \ft TR \fqa the Christ\f*\f - \fr 1:41 \fq Christ: \ft or, \fqa the anointed\f*Christ.
+\v 42 he shall \f - \fr 1:42 \fq shall watch: \ft Gr. \fqa keep\f*watch against thy head, \f - \fr 1:42 \fq the heel: \ft lit. \fqa the step\f*the heel of him, and \f - \fr 1:42 \fq to … dust: \ft Gr. \fqa unto earth\f*to the dust.
+''', lenient: true);
+    expect(_rows(book), [
+      r'1:41 p being interpreted, Christ.\f - \fr 1:41 \fq Christ: \ft TR \fqa the Christ\ft ; \ft or, \fqa the anointed\f*',
+      r'1:42 p he shall watch\f - \fr 1:42 \fq shall watch: \ft Gr. \fqa keep\f* against thy head, the heel\f - \fr 1:42 \fq the heel: \ft lit. \fqa the step\f* of him, and to the dust.\f - \fr 1:42 \fq to … dust: \ft Gr. \fqa unto earth\f*',
+    ]);
+    expect(book.adjusted, containsPair('note joined', 1));
+    expect(book.adjusted, containsPair('note moved', 4));
+  });
+
   test('books take the SBL abbreviations, the Septuagint names theirs', () {
     expect(standardAbbreviation('MAN', 'Prayer of Manasses'), 'Pr Man');
     expect(standardAbbreviation('ISA', 'Esaias'), 'Isa');

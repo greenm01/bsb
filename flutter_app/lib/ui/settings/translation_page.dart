@@ -53,6 +53,10 @@ class _TranslationPageState extends State<TranslationPage> {
       ),
     );
     try {
+      // Importing again replaces the database, so it can't be the one open.
+      if (_appState.translation.id == TranslationStore.idForName(name)) {
+        await _open(Translation.bsb);
+      }
       final result = await _store.importZip(await file.readAsBytes(), name);
       navigator.pop();
       await _open(result.translation);
