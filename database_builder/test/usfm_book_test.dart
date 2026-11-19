@@ -112,6 +112,24 @@ void main() {
     expect(book.adjusted, containsPair('note moved', 4));
   });
 
+  test('a paragraph the app does not know keeps its verses apart', () {
+    final book = parseUsfmBook(r'''
+\id REV - Test
+\c 2
+\p \v 13 I know where you dwell.
+\lf \v 14 But I have a few things against you. \v 15 In the same way. \v 16 Therefore repent.
+''', lenient: true);
+    expect(_rows(book), [
+      '2:13 p I know where you dwell.',
+      '2:13 b ',
+      '2:14 p But I have a few things against you.',
+      '2:15 p In the same way.',
+      '2:16 p Therefore repent.',
+    ]);
+    expect(book.verseCounts, [0, 16]);
+    expect(book.adjusted, containsPair('lf', 1));
+  });
+
   test('books take the SBL abbreviations, the Septuagint names theirs', () {
     expect(standardAbbreviation('MAN', 'Prayer of Manasses'), 'Pr Man');
     expect(standardAbbreviation('ISA', 'Esaias'), 'Isa');

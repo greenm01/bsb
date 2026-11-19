@@ -477,7 +477,23 @@ UsfmBook parseUsfmBook(String usfm, {bool lenient = false}) {
         if (remainder.isEmpty) continue;
         format = ParagraphFormat.p;
         insertAtBottom = false;
-        insert(verse, remainder, format);
+        if (_shouldInsertBreak(oldMarker, 'p')) {
+          insert(verse, '', ParagraphFormat.b);
+        }
+        // Its verses are verses still, as in a plain paragraph.
+        final chunks = remainder.split(r'\v ');
+        for (int i = 0; i < chunks.length; i++) {
+          final chunk = chunks[i].trim();
+          if (chunk.isEmpty) continue;
+          if (i > 0 || remainder.startsWith(r'\v ')) {
+            final verseData = _getVerse(chunk);
+            verse = verseData.$1;
+            text = verseData.$2;
+          } else {
+            text = chunk;
+          }
+          insert(verse, text!, format);
+        }
     }
 
     // If it wasn't handled inside the switch case, insert it now
