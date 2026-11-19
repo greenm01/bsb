@@ -91,6 +91,23 @@ void main() {
     expect((await store.list()).map((t) => t.id), ['bsb']);
   });
 
+  test('books in files named by code alone take the standard order', () async {
+    final imported = await store.importZip(
+      _zip({
+        'MAT.usfm': _matthew,
+        'GEN.usfm': _genesis,
+        'EXO.usfm': _genesis.replaceFirst(r'\id GEN', r'\id EXO'),
+        'TOB.usfm': _tobit,
+      }),
+      'Unnumbered',
+    );
+    final db = await openDatabase(imported.translation.path!);
+    final rows = await db.query(booksTable);
+    await db.close();
+    final canon = Canon.fromRows(imported.translation.id, rows);
+    expect(canon.books.map((b) => b.code), ['GEN', 'EXO', 'TOB', 'MAT']);
+  });
+
   test('the BSB name is taken', () {
     expect(
       () => store.importZip(_zip({'02-GEN.usfm': _genesis}), 'BSB'),

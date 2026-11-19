@@ -213,5 +213,11 @@ _Read _readZip(List<int> zip) {
       skipped.add(basename(entry.name));
     }
   }
+  // Numbered files ("01-GEN.usfm") give the translation's own order; files
+  // named by code alone ("GEN.usfm") would sort alphabetically, so they take
+  // the books' standard order.
+  if (!entries.every((e) => RegExp(r'^\d').hasMatch(basename(e.name)))) {
+    books.sort((a, b) => a.bookId.compareTo(b.bookId));
+  }
   return _Read(books, skipped, adjusted);
 }
